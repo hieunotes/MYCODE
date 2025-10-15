@@ -155,9 +155,29 @@
             </div>
         </div>
 
-    
+
+           <!-- Christmas Message -->
+        <div class="bg-white text-center mt-8 mb-6  hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
+            <div class="card-christmas rounded-xl shadow-lg p-6">
+                <p class="text-2xl font-bold text-red-700 mb-2">🎄 Chúc Mừng Giáng Sinh! 🎄</p>
+                <p class="text-slate-600">Chúc bạn một mùa Giáng Sinh an lành, hạnh phúc và tràn đầy niềm vui!</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+     <script src="https://loktar00.github.io/JQuery-Snowfall/snowfall.jquery.min.js"></script>
+<script>
+  // Snowfall effect
+            $(document).snowfall({
+                image: "https://emojicdn.elk.sh/%F0%9F%8E%84?style=google",
+                minSize: 15,
+                maxSize: 15,
+                maxSpeed: 1,
+                flakeCount:30
+            });
+    </script>       
     <script>
         // Weather
         fetch('https://weather-tayninh.hns.workers.dev/')
