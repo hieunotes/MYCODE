@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - hieunotes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen py-8">
+    <div class="max-w-3xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">🔧 Quản lý trang</h1>
+            <p class="text-gray-600">Bật/tắt các widget trên trang chủ</p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+            <!-- Login Form -->
+            <div id="loginForm">
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="bi bi-key-fill mr-2"></i>Mật khẩu Admin
+                    </label>
+                    <input type="password" id="password" 
+                           placeholder="Nhập mật khẩu..."
+                           class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-500 transition">
+                </div>
+                <button onclick="login()" 
+                        class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition font-semibold shadow-lg">
+                    <i class="bi bi-box-arrow-in-right mr-2"></i>Đăng nhập
+                </button>
+            </div>
+
+            <!-- Settings Panel -->
+            <div id="settingsPanel" class="hidden">
+                <!-- Status Bar -->
+                <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse mr-3"></div>
+                        <span class="text-green-700 font-medium">Đã kết nối</span>
+                    </div>
+                    <button onclick="logout()" class="text-red-600 hover:text-red-700 text-sm font-medium">
+                        <i class="bi bi-box-arrow-right mr-1"></i>Đăng xuất
+                    </button>
+                </div>
+
+                <div class="space-y-4 mb-6">
+                    <!-- Weather Widget -->
+                    <div class="p-5 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border-2 border-blue-200 hover:shadow-md transition">
+                        <label class="flex items-center justify-between cursor-pointer">
+                            <div class="flex items-center">
+                                <i class="bi bi-cloud-sun-fill text-blue-600 text-2xl mr-3"></i>
+                                <div>
+                                    <div class="font-semibold text-gray-800">Widget Thời tiết</div>
+                                    <div class="text-sm text-gray-600">Hiển thị nhiệt độ, độ ẩm hiện tại</div>
+                                </div>
+                            </div>
+                            <input type="checkbox" id="showWeather" class="w-6 h-6 accent-blue-600">
+                        </label>
+                    </div>
+
+                    <!-- Countdown Widget -->
+                    <div class="p-5 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl border-2 border-purple-200 hover:shadow-md transition">
+                        <label class="flex items-center justify-between cursor-pointer">
+                            <div class="flex items-center">
+                                <i class="bi bi-alarm-fill text-purple-600 text-2xl mr-3"></i>
+                                <div>
+                                    <div class="font-semibold text-gray-800">Đếm ngược sinh nhật</div>
+                                    <div class="text-sm text-gray-600">Đếm ngược đến 03/11</div>
+                                </div>
+                            </div>
+                            <input type="checkbox" id="showCountdown" class="w-6 h-6 accent-purple-600">
+                        </label>
+                    </div>
+
+                    <!-- Christmas Widget -->
+                    <div class="p-5 bg-gradient-to-r from-red-50 to-red-100 rounded-xl border-2 border-red-200 hover:shadow-md transition">
+                        <label class="flex items-center justify-between cursor-pointer">
+                            <div class="flex items-center">
+                                <i class="bi bi-gift-fill text-red-600 text-2xl mr-3"></i>
+                                <div>
+                                    <div class="font-semibold text-gray-800">Thông báo Giáng Sinh</div>
+                                    <div class="text-sm text-gray-600">Lời chúc mừng lễ Giáng Sinh</div>
+                                </div>
+                            </div>
+                            <input type="checkbox" id="showChristmas" class="w-6 h-6 accent-red-600">
+                        </label>
+                    </div>
+
+                    <!-- Snowfall Effect -->
+                    <div class="p-5 bg-gradient-to-r from-cyan-50 to-cyan-100 rounded-xl border-2 border-cyan-200 hover:shadow-md transition">
+                        <label class="flex items-center justify-between cursor-pointer">
+                            <div class="flex items-center">
+                                <i class="bi bi-snow text-cyan-600 text-2xl mr-3"></i>
+                                <div>
+                                    <div class="font-semibold text-gray-800">Hiệu ứng tuyết rơi</div>
+                                    <div class="text-sm text-gray-600">Cây thông giáng sinh rơi</div>
+                                </div>
+                            </div>
+                            <input type="checkbox" id="showSnowfall" class="w-6 h-6 accent-cyan-600">
+                        </label>
+                    </div>
+
+                    <!-- Custom Message -->
+                    <div class="p-5 bg-gradient-to-r from-amber-50 to-amber-100 rounded-xl border-2 border-amber-200">
+                        <label class="block">
+                            <div class="flex items-center mb-3">
+                                <i class="bi bi-chat-quote-fill text-amber-600 text-2xl mr-3"></i>
+                                <div>
+                                    <div class="font-semibold text-gray-800">Tin nhắn tùy chỉnh</div>
+                                    <div class="text-sm text-gray-600">Thông báo đặc biệt (để trống nếu không dùng)</div>
+                                </div>
+                            </div>
+                            <textarea id="customMessage" rows="3" 
+                                      class="w-full px-4 py-3 border-2 border-amber-200 rounded-xl focus:outline-none focus:border-amber-400 transition resize-none"
+                                      placeholder="Ví dụ: Trang web đang bảo trì từ 10h-11h ngày mai..."></textarea>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Save Button -->
+                <button onclick="saveSettings()" 
+                        class="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-4 rounded-xl hover:from-green-700 hover:to-emerald-700 transition font-bold text-lg shadow-lg hover:shadow-xl">
+                    <i class="bi bi-check-circle-fill mr-2"></i>Lưu thay đổi
+                </button>
+
+                <!-- Message -->
+                <div id="message" class="mt-4 p-4 rounded-xl text-center font-medium hidden"></div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-6 text-gray-600 text-sm">
+            <i class="bi bi-shield-check mr-1"></i>
+            Powered by Cloudflare Pages + Workers KV
+        </div>
+    </div>
+
+    <script>
+        let currentPassword = '';
+        
+        async function loadSettings() {
+            try {
+                const res = await fetch('/api/settings');
+                const settings = await res.json();
+                
+                document.getElementById('showWeather').checked = settings.showWeather ?? true;
+                document.getElementById('showCountdown').checked = settings.showCountdown ?? true;
+                document.getElementById('showChristmas').checked = settings.showChristmas ?? true;
+                document.getElementById('showSnowfall').checked = settings.showSnowfall ?? true;
+                document.getElementById('customMessage').value = settings.customMessage || '';
+            } catch (error) {
+                console.error('Lỗi:', error);
+            }
+        }
+        
+        async function login() {
+            currentPassword = document.getElementById('password').value;
+            
+            if (!currentPassword) {
+                showMessage('Vui lòng nhập mật khẩu', 'error');
+                return;
+            }
+            
+            try {
+                const res = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: currentPassword, settings: {} })
+                });
+                
+                if (res.ok) {
+                    document.getElementById('loginForm').classList.add('hidden');
+                    document.getElementById('settingsPanel').classList.remove('hidden');
+                    await loadSettings();
+                } else {
+                    showMessage('❌ Sai mật khẩu!', 'error');
+                }
+            } catch (error) {
+                showMessage('Lỗi kết nối: ' + error.message, 'error');
+            }
+        }
+
+        function logout() {
+            currentPassword = '';
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('settingsPanel').classList.add('hidden');
+            document.getElementById('password').value = '';
+        }
+        
+        async function saveSettings() {
+            const settings = {
+                showWeather: document.getElementById('showWeather').checked,
+                showCountdown: document.getElementById('showCountdown').checked,
+                showChristmas: document.getElementById('showChristmas').checked,
+                showSnowfall: document.getElementById('showSnowfall').checked,
+                customMessage: document.getElementById('customMessage').value
+            };
+            
+            try {
+                const res = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: currentPassword, settings })
+                });
+                
+                if (res.ok) {
+                    showMessage('✅ Đã lưu thành công! Tải lại trang chủ để xem thay đổi.', 'success');
+                } else {
+                    showMessage('❌ Lỗi khi lưu', 'error');
+                }
+            } catch (error) {
+                showMessage('Lỗi: ' + error.message, 'error');
+            }
+        }
+        
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = `mt-4 p-4 rounded-xl text-center font-medium ${
+                type === 'success' 
+                    ? 'bg-green-100 text-green-800 border-2 border-green-300' 
+                    : 'bg-red-100 text-red-800 border-2 border-red-300'
+            }`;
+            msg.classList.remove('hidden');
+            setTimeout(() => msg.classList.add('hidden'), 5000);
+        }
+
+        // Enter to login
+        document.getElementById('password')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') login();
+        });
+    </script>
+</body>
+</html>

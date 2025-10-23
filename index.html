@@ -43,6 +43,30 @@
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen">
+
+    <script>
+fetch('/api/settings')
+  .then(r => r.json())
+  .then(settings => {
+    if (!settings.showWeather)
+      document.querySelector('.bg-white.rounded-xl.shadow-lg.p-6.mb-6:has(#location)')?.remove();
+    if (!settings.showCountdown)
+      document.querySelector('.bg-white.rounded-xl.shadow-lg.p-6.mb-6:has(#countdown)')?.remove();
+    if (!settings.showChristmas)
+      document.querySelector('.card-christmas')?.parentElement?.remove();
+    if (settings.showSnowfall) {
+      // $(document).snowfall({ ... });
+    }
+    if (settings.customMessage) {
+      const msg = document.createElement('div');
+      msg.className = 'bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6 rounded';
+      msg.innerHTML = `<p class="font-medium">${settings.customMessage}</p>`;
+      document.querySelector('.max-w-4xl')?.prepend(msg);
+    }
+  })
+  .catch(err => console.log('Settings not loaded:', err));
+</script>
+
     <div class="max-w-4xl mx-auto px-4 py-8">
         <!-- Profile Header -->
         <header class="text-center mb-10 animate-fade-in">
