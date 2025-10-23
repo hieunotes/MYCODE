@@ -63,11 +63,7 @@
   <button id="save">💾 Lưu cài đặt</button>
 
   <script>
-<<<<<<< HEAD
     // Tải cài đặt hiện tại
-=======
-    // Tải settings hiện tại
->>>>>>> 7ff7d2fa040ae7d8cbac14968209ed1da71f63b1
     fetch('/api/settings')
       .then(r => r.json())
       .then(s => {
@@ -75,7 +71,6 @@
         countdown.checked = s.showCountdown ?? true;
         christmas.checked = s.showChristmas ?? true;
         snowfall.checked = s.showSnowfall ?? true;
-<<<<<<< HEAD
         blog.checked = s.showBlog ?? true;
         patriot.checked = s.showPatriot ?? true;
         avatar.checked = s.showAvatar ?? true;
@@ -87,20 +82,12 @@
 
       });
 
-    // Lưu cài đặt mới
-=======
-        message.value = s.customMessage || '';
-      });
-
-    // Lưu settings mới
->>>>>>> 7ff7d2fa040ae7d8cbac14968209ed1da71f63b1
     save.onclick = async () => {
       const body = {
         showWeather: weather.checked,
         showCountdown: countdown.checked,
         showChristmas: christmas.checked,
         showSnowfall: snowfall.checked,
-<<<<<<< HEAD
         showBlog: blog.checked,
         showPatriot: patriot.checked,
         showAvatar: avatar.checked,
@@ -108,11 +95,7 @@
         customSlogan: slogan.value,
         countdownDate: countdownDate.value,
         theme: theme.value,
-        snowImageUrl: snowImageUrl.value,
-
-=======
-        customMessage: message.value
->>>>>>> 7ff7d2fa040ae7d8cbac14968209ed1da71f63b1
+        snowImageUrl: snowImageUrl.value
       };
       const pass = password.value;
       const res = await fetch(`/api/settings?password=${encodeURIComponent(pass)}`, {
