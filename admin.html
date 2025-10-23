@@ -21,7 +21,7 @@
     <h3>Hiển thị các phần</h3>
     <label><input type="checkbox" id="weather"> Hiện thời tiết</label>
     <label><input type="checkbox" id="countdown"> Hiện đếm ngược</label>
-    <label><input type="checkbox" id="christmas"> Hiện Giáng sinh</label>
+    <label><input type="checkbox" id="christmas"> Hiện thông điệp cuối trang</label>
     <label><input type="checkbox" id="snowfall"> Hiệu ứng tuyết rơi</label>
     <label><input type="checkbox" id="blog"> Hiện phần bài viết</label>
     <label><input type="checkbox" id="patriot"> Hiện thông điệp “Hoàng Sa & Trường Sa”</label>
@@ -41,6 +41,9 @@
  
     <label>URL hình tuyết:</label>
 <input type="text" id="snowImageUrl" placeholder="https://...png hoặc emoji CDN">
+<label>Thông điệp cuối trang:</label>
+<input type="text" id="christmasMessage" placeholder="Nhập lời chúc...">
+
 
   </div>
 
@@ -79,6 +82,7 @@
         countdownDate.value = s.countdownDate || '';
         theme.value = s.theme || 'light';
         snowImageUrl.value = s.snowImageUrl || "https://emojicdn.elk.sh/%F0%9F%8E%84?style=google";
+        christmasMessage.value = s.christmasMessage || '';
 
       });
 
@@ -95,7 +99,8 @@
         customSlogan: slogan.value,
         countdownDate: countdownDate.value,
         theme: theme.value,
-        snowImageUrl: snowImageUrl.value
+        snowImageUrl: snowImageUrl.value,
+        christmasMessage: christmasMessage.value
       };
       const pass = password.value;
       const res = await fetch(`/api/settings?password=${encodeURIComponent(pass)}`, {
