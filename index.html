@@ -44,28 +44,74 @@
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen">
 
-    <script>
+<script>
 fetch('/api/settings')
   .then(r => r.json())
   .then(settings => {
+    // 1️⃣ Ẩn/hiện từng phần
     if (!settings.showWeather)
       document.querySelector('.bg-white.rounded-xl.shadow-lg.p-6.mb-6:has(#location)')?.remove();
+
     if (!settings.showCountdown)
       document.querySelector('.bg-white.rounded-xl.shadow-lg.p-6.mb-6:has(#countdown)')?.remove();
+
     if (!settings.showChristmas)
       document.querySelector('.card-christmas')?.parentElement?.remove();
+
+    if (!settings.showBlog)
+      document.querySelector('#blogPosts')?.closest('.bg-white')?.remove();
+
+    if (!settings.showPatriot)
+      document.querySelector('span.font-medium')?.parentElement?.remove();
+
+    if (!settings.showAvatar)
+      document.querySelector('header')?.remove();
+
+    // 2️⃣ Hiệu ứng tuyết rơi (chỉ bật nếu true)
     if (settings.showSnowfall) {
-      // $(document).snowfall({ ... });
+      $(document).snowfall({
+        image: "https://emojicdn.elk.sh/%F0%9F%8E%84?style=google",
+        minSize: 15,
+        maxSize: 15,
+        maxSpeed: 1,
+        flakeCount: 30
+      });
     }
+
+    // 3️⃣ Thông điệp tùy chỉnh
     if (settings.customMessage) {
       const msg = document.createElement('div');
       msg.className = 'bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6 rounded';
       msg.innerHTML = `<p class="font-medium">${settings.customMessage}</p>`;
       document.querySelector('.max-w-4xl')?.prepend(msg);
     }
+
+    // 4️⃣ Slogan tùy chỉnh
+    if (settings.customSlogan) {
+      const sloganEl = document.querySelector('header p');
+      if (sloganEl) sloganEl.textContent = settings.customSlogan;
+    }
+
+    // 5️⃣ Ngày đếm ngược tùy chỉnh
+    if (settings.countdownDate) {
+      const target = new Date(settings.countdownDate);
+      window.CUSTOM_COUNTDOWN_DATE = target; // truyền cho script đếm ngược ở dưới
+    }
+
+    // 6️⃣ Giao diện chủ đề
+    if (settings.theme === 'dark') {
+      document.body.classList.add('bg-slate-900', 'text-slate-100');
+    } else if (settings.theme === 'light') {
+      document.body.classList.remove('bg-slate-900', 'text-slate-100');
+    } else if (settings.theme === 'auto') {
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('bg-slate-900', 'text-slate-100');
+      }
+    }
   })
   .catch(err => console.log('Settings not loaded:', err));
 </script>
+
 
     <div class="max-w-4xl mx-auto px-4 py-8">
         <!-- Profile Header -->
@@ -205,14 +251,18 @@ fetch('/api/settings')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://loktar00.github.io/JQuery-Snowfall/snowfall.jquery.min.js"></script>
     <script>
-        // Snowfall effect
-        $(document).snowfall({
-            image: "https://emojicdn.elk.sh/%F0%9F%8E%84?style=google",
-            minSize: 15,
-            maxSize: 15,
-            maxSpeed: 1,
-            flakeCount: 30
-        });
+       // 2️⃣ Hiệu ứng tuyết rơi (có thể thay URL)
+if (settings.showSnowfall) {
+  const snowImage = settings.snowImageUrl?.trim() || "https://emojicdn.elk.sh/%F0%9F%8E%84?style=google";
+  $(document).snowfall({
+    image: snowImage,
+    minSize: 15,
+    maxSize: 15,
+    maxSpeed: 1,
+    flakeCount: 30
+  });
+}
+
     </script>       
     <script>
         // Weather
@@ -267,42 +317,59 @@ fetch('/api/settings')
                 document.getElementById('blogPosts').innerHTML = '<div class="text-center text-red-500 py-4">Không thể tải bài viết</div>';
             });
 
-        // Countdown
-        function updateCountdown() {
-            const now = new Date();
-            const currentYear = now.getFullYear();
-            let birthday = new Date(currentYear, 10, 3);
-            
-            if (now > birthday) {
-                birthday = new Date(currentYear + 1, 10, 3);
-            }
-            
-            const timeRemaining = birthday - now;
-            
-            if (timeRemaining <= 0) {
-                document.getElementById('headline').textContent = 'Chúc mừng sinh nhật! 🎂';
-                document.getElementById('countdown').classList.add('hidden');
-                document.getElementById('content').classList.remove('hidden');
-            } else {
-                const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
-                
-                document.getElementById('days').textContent = days.toString().padStart(2, '0');
-                document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
-                document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
-                document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
-                
-                document.getElementById('headline').textContent = 'Đếm ngược sinh nhật';
-                document.getElementById('countdown').classList.remove('hidden');
-                document.getElementById('content').classList.add('hidden');
-            }
-        }
-        
-        updateCountdown();
-        setInterval(updateCountdown, 1000);
+    
     </script>
+<script>
+function updateCountdown() {
+  const now = new Date();
+
+  // ✅ Lấy ngày đích từ settings (nếu có)
+  let targetDate;
+  if (window.CUSTOM_COUNTDOWN_DATE) {
+    targetDate = new Date(window.CUSTOM_COUNTDOWN_DATE);
+  } else {
+    // Mặc định: 3/11 (lưu ý tháng 10 = tháng 11 vì JS tính từ 0)
+    targetDate = new Date(now.getFullYear(), 10, 3);
+  }
+
+  // Nếu ngày đích đã qua -> chuyển sang năm sau
+  if (now > targetDate) {
+    targetDate.setFullYear(targetDate.getFullYear() + 1);
+  }
+
+  const timeRemaining = targetDate - now;
+
+  // Nếu hết thời gian
+  if (timeRemaining <= 0) {
+    document.getElementById('headline').textContent = 'Chúc mừng sinh nhật! 🎂';
+    document.getElementById('countdown').classList.add('hidden');
+    document.getElementById('content').classList.remove('hidden');
+    return;
+  }
+
+  // Tính toán ngày, giờ, phút, giây
+  const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+
+  // Cập nhật giao diện
+  document.getElementById('days').textContent = days.toString().padStart(2, '0');
+  document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+  document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+  document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+
+  // Cập nhật tiêu đề
+  const headline = document.getElementById('headline');
+  headline.textContent = window.CUSTOM_COUNTDOWN_DATE
+    ? 'Đếm ngược sự kiện'
+    : 'Đếm ngược sinh nhật';
+}
+
+// Gọi ngay và cập nhật mỗi giây
+updateCountdown();
+setInterval(updateCountdown, 1000);
+</script>
 
     <!-- Cloudflare Web Analytics -->
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "9f1080048ce24bdb91a28cb9db818f72"}'></script>
