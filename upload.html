@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Trang đăng status</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+  <h2>Đăng status mới</h2>
+  <textarea id="status" placeholder="Nhập nội dung..."></textarea><br>
+  <button id="postBtn">Đăng</button>
+
+  <h3>Danh sách</h3>
+  <div id="list"></div>
+
+  <script>
+    const API_KEY = "$2a$10$VlmUBXnZi4dkRLrjG4mzt.B81NfM1cE7/miMxJIyjHxwngReTTsTG";
+    const BIN_ID = "68fa2573ae596e708f26480d";
+
+    function loadData() {
+      $.ajax({
+        url: `https://api.jsonbin.io/v3/b/${BIN_ID}/latest`,
+        headers: { "X-Master-Key": API_KEY },
+        success: (res) => {
+          const data = res.record.quotes || [];
+          $("#list").html(data.map(q => `<p>${q.text}</p>`).join(""));
+        }
+      });
+    }
+
+    $("#postBtn").click(() => {
+      const text = $("#status").val().trim();
+      if (!text) return alert("Nhập nội dung đi 😅");
+
+      // Tải dữ liệu cũ
+      $.ajax({
+        url: `https://api.jsonbin.io/v3/b/${BIN_ID}/latest`,
+        headers: { "X-Master-Key": API_KEY },
+        success: (res) => {
+          const data = res.record.quotes || [];
+          data.unshift({ text });
+          // Ghi lại
+          $.ajax({
+            url: `https://api.jsonbin.io/v3/b/${BIN_ID}`,
+            method: "PUT",
+            headers: { "Content-Type": "application/json", "X-Master-Key": API_KEY },
+            data: JSON.stringify({ quotes: data }),
+            success: () => {
+              $("#status").val("");
+              loadData();
+            }
+          });
+        }
+      });
+    });
+
+    loadData();
+  </script>
+</body>
+</html>
