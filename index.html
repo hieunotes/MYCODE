@@ -43,55 +43,6 @@
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen">
-
-<script>
-fetch('/api/settings')
-  .then(r => r.json())
-  .then(settings => {
-    // 1️⃣ Ẩn/hiện từng phần
-    if (!settings.showWeather)
-      document.querySelector('.bg-white.rounded-xl.shadow-lg.p-6.mb-6:has(#location)')?.remove();
-
-    if (!settings.showCountdown)
-      document.querySelector('.bg-white.rounded-xl.shadow-lg.p-6.mb-6:has(#countdown)')?.remove();
-
-    if (!settings.showChristmas)
-      document.querySelector('.card-christmas')?.parentElement?.remove();
-
-    if (!settings.showBlog)
-      document.querySelector('#blogPosts')?.closest('.bg-white')?.remove();
-
-    if (!settings.showPatriot)
-      document.querySelector('span.font-medium')?.parentElement?.remove();
-
-    if (!settings.showAvatar)
-      document.querySelector('header')?.remove();
-    
-    if (settings.christmasMessage) {
-  document.getElementById('christmasText').textContent = settings.christmasMessage;
-}
-    if (settings.showSnowfall) {
-      $(document).snowfall({
-        image: "https://emojicdn.elk.sh/%F0%9F%8E%84?style=google",
-        minSize: 15,
-        maxSize: 15,
-        maxSpeed: 1,
-        flakeCount: 30
-      });
-    }
-    if (settings.customMessage) {
-      const msg = document.createElement('div');
-      msg.className = 'bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6 rounded';
-      msg.innerHTML = `<p class="font-medium">${settings.customMessage}</p>`;
-      document.querySelector('.max-w-4xl')?.prepend(msg);
-    }
-    if (settings.countdownDate) {
-      const target = new Date(settings.countdownDate);
-      window.CUSTOM_COUNTDOWN_DATE = target; // truyền cho script đếm ngược ở dưới
-    }
-  })
-  .catch(err => console.log('Settings not loaded:', err));
-</script>
     <div class="max-w-4xl mx-auto px-4 py-8">
         <!-- Profile Header -->
         <header class="text-center mb-10 animate-fade-in">
@@ -177,7 +128,7 @@ fetch('/api/settings')
         <!-- Countdown Widget -->
         <div class="bg-white rounded-xl shadow-lg p-6 mb-6 ">
             <h2 class="text-xl font-semibold mb-4 flex items-center">
-                <i class="bi bi-clock text-blue-600 mr-3"></i> <span id="headline">Đếm ngược</span>
+                <i class="bi bi-clock text-blue-600 mr-3"></i> <span id="headline">Đếm ngược sinh nhật</span>
             </h2>
             <div id="countdown" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                 <div class="bg-blue-50 rounded-lg p-4">
@@ -306,18 +257,13 @@ fetch('/api/settings')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://loktar00.github.io/JQuery-Snowfall/snowfall.jquery.min.js"></script>
     <script>
-       // 2️⃣ Hiệu ứng tuyết rơi (có thể thay URL)
-if (settings.showSnowfall) {
-  const snowImage = settings.snowImageUrl?.trim() || "https://emojicdn.elk.sh/%F0%9F%8E%84?style=google";
   $(document).snowfall({
-    image: snowImage,
+    image: "https://emojicdn.elk.sh/%F0%9F%8E%84?style=google",
     minSize: 15,
     maxSize: 15,
     maxSpeed: 1,
     flakeCount: 30
   });
-}
-
     </script>       
     <script>
         // Weather
@@ -340,14 +286,7 @@ if (settings.showSnowfall) {
 function updateCountdown() {
   const now = new Date();
 
-  // ✅ Lấy ngày đích từ settings (nếu có)
-  let targetDate;
-  if (window.CUSTOM_COUNTDOWN_DATE) {
-    targetDate = new Date(window.CUSTOM_COUNTDOWN_DATE);
-  } else {
-    // Mặc định: 3/11 (lưu ý tháng 10 = tháng 11 vì JS tính từ 0)
-    targetDate = new Date(now.getFullYear(), 10, 3);
-  }
+   targetDate = new Date(now.getFullYear(), 10, 3);
 
   // Nếu ngày đích đã qua -> chuyển sang năm sau
   if (now > targetDate) {
@@ -375,12 +314,6 @@ function updateCountdown() {
   document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
   document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
   document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
-
-  // Cập nhật tiêu đề
-  const headline = document.getElementById('headline');
-  headline.textContent = window.CUSTOM_COUNTDOWN_DATE
-    ? 'Đếm ngược sự kiện'
-    : 'Đếm ngược sinh nhật';
 }
 
 // Gọi ngay và cập nhật mỗi giây
