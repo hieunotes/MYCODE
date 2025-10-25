@@ -70,11 +70,6 @@ fetch('/api/settings')
     if (settings.christmasMessage) {
   document.getElementById('christmasText').textContent = settings.christmasMessage;
 }
-<<<<<<< HEAD
-=======
-
-    // 2️⃣ Hiệu ứng tuyết rơi (chỉ bật nếu true)
->>>>>>> 5396805641e45086e3527c82fc822428ef5fdff8
     if (settings.showSnowfall) {
       $(document).snowfall({
         image: "https://emojicdn.elk.sh/%F0%9F%8E%84?style=google",
@@ -90,28 +85,13 @@ fetch('/api/settings')
       msg.innerHTML = `<p class="font-medium">${settings.customMessage}</p>`;
       document.querySelector('.max-w-4xl')?.prepend(msg);
     }
-    if (settings.customSlogan) {
-      const sloganEl = document.querySelector('header p');
-      if (sloganEl) sloganEl.textContent = settings.customSlogan;
-    }
     if (settings.countdownDate) {
       const target = new Date(settings.countdownDate);
       window.CUSTOM_COUNTDOWN_DATE = target; // truyền cho script đếm ngược ở dưới
     }
-    if (settings.theme === 'dark') {
-      document.body.classList.add('bg-slate-900', 'text-slate-100');
-    } else if (settings.theme === 'light') {
-      document.body.classList.remove('bg-slate-900', 'text-slate-100');
-    } else if (settings.theme === 'auto') {
-      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        document.body.classList.add('bg-slate-900', 'text-slate-100');
-      }
-    }
   })
   .catch(err => console.log('Settings not loaded:', err));
 </script>
-
-
     <div class="max-w-4xl mx-auto px-4 py-8">
         <!-- Profile Header -->
         <header class="text-center mb-10 animate-fade-in">
@@ -245,12 +225,53 @@ fetch('/api/settings')
                 </div>
             </div>
         </div>
+<script>
+      // Blog Posts
+        fetch('https://opensheet.elk.sh/15cyTIgpNtdJEoY2Mmp4mq6jln2JCBJHOmLGJbsorjeE/blog!A1:A1000')
+            .then(response => response.json())
+            .then(data => {
+                const blogContainer = document.getElementById('blogPosts');
+                
+                if (data && data.length > 0) {
+                    // Đảo ngược mảng để hiển thị từ dưới lên
+                    const reversedData = data.reverse();
+                    
+                    blogContainer.innerHTML = '';
+                    
+                    reversedData.forEach((post, index) => {
+                        if (post.text) {
+                            const postElement = document.createElement('div');
+                            postElement.className = 'bg-slate-50 rounded-lg p-4 hover:bg-slate-100 transition-colors duration-200';
+                            postElement.innerHTML = `
+                                <div class="flex items-start gap-3">
+                                    <i class="bi bi-chat-left-text text-blue-600 text-lg mt-1"></i>
+                                    <div class="flex-1">
+                                        <p class="text-slate-700">${post.text}</p>
+                                    </div>
+                                </div>
+                            `;
+                            blogContainer.appendChild(postElement);
+                        }
+                    });
+                } else {
+                    blogContainer.innerHTML = '<div class="text-center text-slate-500 py-4">Chưa có bài viết nào</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Lỗi tải blog:', error);
+                document.getElementById('blogPosts').innerHTML = '<div class="text-center text-red-500 py-4">Không thể tải bài viết</div>';
+            });
+
+    </script>
+
+
+
 
 
 
         <!-- Footer -->
          <div class="text-center mt-8 mb-6">
-    <p>hieunotes</p>
+    <p>Hieunotes | Made with love in Vietnam</p>
 
 </div>
     </div>
@@ -288,44 +309,6 @@ if (settings.showSnowfall) {
                 document.getElementById('location').textContent = 'Tây Ninh';
                 document.getElementById('status').textContent = 'Không thể tải dữ liệu';
             });
-
-        // Blog Posts
-        fetch('https://opensheet.elk.sh/15cyTIgpNtdJEoY2Mmp4mq6jln2JCBJHOmLGJbsorjeE/blog!A1:A1000')
-            .then(response => response.json())
-            .then(data => {
-                const blogContainer = document.getElementById('blogPosts');
-                
-                if (data && data.length > 0) {
-                    // Đảo ngược mảng để hiển thị từ dưới lên
-                    const reversedData = data.reverse();
-                    
-                    blogContainer.innerHTML = '';
-                    
-                    reversedData.forEach((post, index) => {
-                        if (post.text) {
-                            const postElement = document.createElement('div');
-                            postElement.className = 'bg-slate-50 rounded-lg p-4 hover:bg-slate-100 transition-colors duration-200';
-                            postElement.innerHTML = `
-                                <div class="flex items-start gap-3">
-                                    <i class="bi bi-chat-left-text text-blue-600 text-lg mt-1"></i>
-                                    <div class="flex-1">
-                                        <p class="text-slate-700">${post.text}</p>
-                                    </div>
-                                </div>
-                            `;
-                            blogContainer.appendChild(postElement);
-                        }
-                    });
-                } else {
-                    blogContainer.innerHTML = '<div class="text-center text-slate-500 py-4">Chưa có bài viết nào</div>';
-                }
-            })
-            .catch(error => {
-                console.error('Lỗi tải blog:', error);
-                document.getElementById('blogPosts').innerHTML = '<div class="text-center text-red-500 py-4">Không thể tải bài viết</div>';
-            });
-
-    
     </script>
 <script>
 function updateCountdown() {
