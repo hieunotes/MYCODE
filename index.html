@@ -213,62 +213,88 @@ fetch('/api/settings')
   </div>
 </div>
 
-        <!-- Blog Posts Widget -->
-        <div class="bg-white rounded-xl shadow-lg p-6 mb-6 ">
-            <h2 class="text-xl font-semibold mb-4 flex items-center">
-                <i class="bi bi-journal-text text-blue-600 mr-3"></i> Bài viết
-            </h2>
-            <div id="blogPosts" class="space-y-3">
-                <div class="text-center text-slate-500 py-4">
-                    <i class="bi bi-hourglass-split text-2xl mb-2"></i>
-                    <div>Đang tải bài viết...</div>
+      <!-- Blog Posts Container -->
+        <div id="blogPosts" class="divide-y divide-slate-200">
+            <!-- Loading State -->
+            <div class="flex items-center justify-center py-12">
+                <div class="text-center">
+                    <i class="bi bi-hourglass-split text-3xl text-slate-400 mb-3 inline-block animate-pulse"></i>
+                    <div class="text-slate-500">Đang tải bài viết...</div>
                 </div>
             </div>
         </div>
-<script>
-      // Blog Posts
+    </div>
+
+    <script>
+        // Blog Posts
         fetch('https://opensheet.elk.sh/15cyTIgpNtdJEoY2Mmp4mq6jln2JCBJHOmLGJbsorjeE/blog!A1:A1000')
             .then(response => response.json())
             .then(data => {
                 const blogContainer = document.getElementById('blogPosts');
-                
+               
                 if (data && data.length > 0) {
                     // Đảo ngược mảng để hiển thị từ dưới lên
                     const reversedData = data.reverse();
-                    
+                   
                     blogContainer.innerHTML = '';
-                    
+                   
                     reversedData.forEach((post, index) => {
                         if (post.text) {
                             const postElement = document.createElement('div');
-                            postElement.className = 'bg-slate-50 rounded-lg p-4 hover:bg-slate-100 transition-colors duration-200';
+                            postElement.className = 'py-4 hover:bg-slate-50 transition-colors duration-150 cursor-pointer';
+                            
+                            // Generate random avatar color
+                            const colors = ['bg-blue-500', 'bg-purple-500', 'bg-pink-500', 'bg-green-500', 'bg-orange-500', 'bg-red-500'];
+                            const randomColor = colors[index % colors.length];
+                            
                             postElement.innerHTML = `
-                                <div class="flex items-start gap-3">
-                                    <i class="bi bi-chat-left-text text-blue-600 text-lg mt-1"></i>
-                                    <div class="flex-1">
-                                        <p class="text-slate-700">${post.text}</p>
+                                <div class="flex gap-3 px-4">
+                                    <!-- Avatar -->
+                                    <div class="flex-shrink-0">
+                                        <div class="${randomColor} w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold">
+                                            ${post.text.charAt(0).toUpperCase()}
+                                        </div>
                                     </div>
-                                </div>
-                            `;
+                                    
+                                    <!-- Content -->
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="font-semibold text-slate-900 text-sm">Anonymous</span>
+                                        </div>
+                                        
+                                        <p class="text-slate-900 text-sm leading-relaxed whitespace-pre-wrap break-words">${escapeHtml(post.text)}</p>                 
+                                      </div> `;
                             blogContainer.appendChild(postElement);
                         }
                     });
                 } else {
-                    blogContainer.innerHTML = '<div class="text-center text-slate-500 py-4">Chưa có bài viết nào</div>';
+                    blogContainer.innerHTML = `
+                        <div class="flex flex-col items-center justify-center py-12 text-center">
+                            <i class="bi bi-inbox text-5xl text-slate-300 mb-3"></i>
+                            <div class="text-slate-500 font-medium">Chưa có bài viết nào</div>
+                            <div class="text-slate-400 text-sm mt-1">Hãy là người đầu tiên chia sẻ điều gì đó</div>
+                        </div>
+                    `;
                 }
             })
             .catch(error => {
                 console.error('Lỗi tải blog:', error);
-                document.getElementById('blogPosts').innerHTML = '<div class="text-center text-red-500 py-4">Không thể tải bài viết</div>';
+                document.getElementById('blogPosts').innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-12 text-center">
+                        <i class="bi bi-exclamation-triangle text-5xl text-red-400 mb-3"></i>
+                        <div class="text-red-600 font-medium">Không thể tải bài viết</div>
+                        <div class="text-slate-500 text-sm mt-1">Vui lòng thử lại sau</div>
+                    </div>
+                `;
             });
 
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
     </script>
-
-
-
-
-
-
         <!-- Footer -->
          <div class="text-center mt-8 mb-6">
     <p>Hieunotes | Made with love in Vietnam</p>
