@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Học Từ Vựng Tiếng Trung</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-indigo-900 mb-2">学习汉语词汇</h1>
+            <p class="text-gray-600">Học Từ Vựng Tiếng Trung HSK1</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="max-w-2xl mx-auto mb-6 grid grid-cols-4 gap-4">
+            <div class="bg-white rounded-lg shadow p-4 text-center">
+                <div class="text-2xl font-bold text-green-600" id="correct-count">0</div>
+                <div class="text-sm text-gray-600">Đúng</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4 text-center">
+                <div class="text-2xl font-bold text-red-600" id="wrong-count">0</div>
+                <div class="text-sm text-gray-600">Sai</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4 text-center">
+                <div class="text-2xl font-bold text-orange-600" id="review-count">0</div>
+                <div class="text-sm text-gray-600">Cần ôn</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4 text-center">
+                <div class="text-2xl font-bold text-indigo-600" id="progress">0/0</div>
+                <div class="text-sm text-gray-600">Tiến độ</div>
+            </div>
+        </div>
+
+        <!-- Mode Selection -->
+        <div class="max-w-2xl mx-auto mb-6 flex justify-center gap-4">
+            <button id="toggle-mode" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition">
+                Chế độ: <span id="current-mode">Trung → Việt</span>
+            </button>
+            <button id="reset-btn" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition">
+                🔄 Reset
+            </button>
+        </div>
+
+        <!-- Question Card -->
+        <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-8 mb-6">
+            <div id="loading" class="text-center py-12">
+                <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                <p class="mt-4 text-gray-600">Đang tải dữ liệu...</p>
+            </div>
+
+            <div id="question-container" class="hidden">
+                <div class="text-center mb-8">
+                    <div class="text-5xl font-bold text-indigo-900 mb-3" id="question-text"></div>
+                    <div class="text-2xl text-gray-500" id="question-pinyin"></div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4">
+                    <button class="answer-btn bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-4 px-6 rounded-xl shadow transition transform hover:scale-105" data-index="0"></button>
+                    <button class="answer-btn bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-4 px-6 rounded-xl shadow transition transform hover:scale-105" data-index="1"></button>
+                    <button class="answer-btn bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-4 px-6 rounded-xl shadow transition transform hover:scale-105" data-index="2"></button>
+                    <button class="answer-btn bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-4 px-6 rounded-xl shadow transition transform hover:scale-105" data-index="3"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Next Button -->
+        <div class="max-w-2xl mx-auto text-center">
+            <button id="next-btn" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition">
+                Câu tiếp theo →
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let vocabulary = [];
+        let currentQuestion = null;
+        let correctAnswer = '';
+        let correctCount = 0;
+        let wrongCount = 0;
+        let totalQuestions = 0;
+        let answered = false;
+        let mode = 'zh-vi'; // 'zh-vi' = Trung sang Việt, 'vi-zh' = Việt sang Trung
+        let learnedWords = {};
+        let reviewQueue = []; // Hàng đợi ôn tập các từ sai
+        let needReviewCount = 0; // Số lần cần ôn lại từ sai
+
+        // Load learned words from storage
+        function loadProgress() {
+            const stored = localStorage.getItem('chineseVocabProgress');
+            if (stored) {
+                try {
+                    const data = JSON.parse(stored);
+                    learnedWords = data.words || {};
+                    correctCount = data.correctCount || 0;
+                    wrongCount = data.wrongCount || 0;
+                    reviewQueue = data.reviewQueue || [];
+                    $('#correct-count').text(correctCount);
+                    $('#wrong-count').text(wrongCount);
+                    updateReviewCount();
+                } catch (e) {
+                    learnedWords = {};
+                    reviewQueue = [];
+                }
+            }
+        }
+
+        // Save progress to storage
+        function saveProgress() {
+            const data = {
+                words: learnedWords,
+                correctCount: correctCount,
+                wrongCount: wrongCount,
+                reviewQueue: reviewQueue
+            };
+            localStorage.setItem('chineseVocabProgress', JSON.stringify(data));
+        }
+
+        // Update review count display
+        function updateReviewCount() {
+            needReviewCount = reviewQueue.filter(w => w.reviewsNeeded > 0).length;
+            $('#review-count').text(needReviewCount);
+        }
+
+        // Add word to review queue
+        function addToReviewQueue(word) {
+            const existingIndex = reviewQueue.findIndex(w => w.CHUHAN === word.CHUHAN);
+            if (existingIndex >= 0) {
+                // Tăng số lần cần ôn
+                reviewQueue[existingIndex].reviewsNeeded += 2;
+            } else {
+                // Thêm mới vào hàng đợi, cần ôn 3 lần
+                reviewQueue.push({
+                    ...word,
+                    reviewsNeeded: 3,
+                    lastWrong: Date.now()
+                });
+            }
+            updateReviewCount();
+        }
+
+        // Get next question (prioritize review queue)
+        function getNextWord() {
+            // Ưu tiên từ cần ôn tập (70% chance nếu có)
+            const wordsNeedReview = reviewQueue.filter(w => w.reviewsNeeded > 0);
+            
+            if (wordsNeedReview.length > 0 && Math.random() < 0.7) {
+                // Lấy từ sai gần đây nhất
+                return wordsNeedReview[wordsNeedReview.length - 1];
+            }
+            
+            // Lấy từ ngẫu nhiên từ vocabulary
+            return vocabulary[Math.floor(Math.random() * vocabulary.length)];
+        }
+
+        // Mark word as reviewed correctly
+        function markWordReviewed(word) {
+            const index = reviewQueue.findIndex(w => w.CHUHAN === word.CHUHAN);
+            if (index >= 0) {
+                reviewQueue[index].reviewsNeeded--;
+                if (reviewQueue[index].reviewsNeeded <= 0) {
+                    // Đã ôn đủ, có thể xóa khỏi hàng đợi sau một thời gian
+                    reviewQueue[index].reviewsNeeded = 0;
+                }
+                updateReviewCount();
+            }
+        }
+
+        // Toggle mode
+        $('#toggle-mode').click(function() {
+            mode = (mode === 'zh-vi') ? 'vi-zh' : 'zh-vi';
+            $('#current-mode').text(mode === 'zh-vi' ? 'Trung → Việt' : 'Việt → Trung');
+            if (!answered) {
+                generateQuestion();
+            }
+        });
+
+        // Reset button
+        $('#reset-btn').click(function() {
+            if (confirm('🔄 Bạn có chắc muốn xóa toàn bộ tiến độ học?\n\nĐiều này sẽ xóa:\n• Số câu đúng/sai\n• Hàng đợi ôn tập\n• Tất cả dữ liệu đã lưu')) {
+                // Clear all data
+                localStorage.removeItem('chineseVocabProgress');
+                learnedWords = {};
+                reviewQueue = [];
+                correctCount = 0;
+                wrongCount = 0;
+                
+                // Update UI
+                $('#correct-count').text(0);
+                $('#wrong-count').text(0);
+                $('#review-count').text(0);
+                $('#progress').text(`0/${totalQuestions}`);
+                
+                // Generate new question
+                generateQuestion();
+                
+                alert('✅ Đã reset thành công! Bắt đầu học lại từ đầu.');
+            }
+        });
+
+        // Fetch data from API
+        $.getJSON('https://opensheet.elk.sh/1-YQCupba8O7qm0WHmtK65ZmTzKkipcZ0yS9IdpTjCd4/BOTHUTG!A1:Z1000', function(data) {
+            vocabulary = data.filter(item => item.CHUHAN && item.VIETNAM);
+            totalQuestions = vocabulary.length;
+            $('#progress').text(`0/${totalQuestions}`);
+            $('#loading').addClass('hidden');
+            $('#question-container').removeClass('hidden');
+            loadProgress();
+            generateQuestion();
+        }).fail(function() {
+            $('#loading').html('<p class="text-red-600">Lỗi tải dữ liệu. Vui lòng thử lại!</p>');
+        });
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function generateQuestion() {
+            if (vocabulary.length === 0) return;
+            
+            answered = false;
+            $('#next-btn').addClass('hidden');
+            
+            // Remove previous explanation if exists
+            $('.bg-yellow-50').remove();
+            
+            // Reset button styles
+            $('.answer-btn').removeClass('bg-green-500 bg-red-500 text-white cursor-not-allowed')
+                           .addClass('bg-gray-100 hover:bg-gray-200')
+                           .prop('disabled', false);
+
+            // Get next word (prioritize review queue)
+            currentQuestion = getNextWord();
+            
+            // Display question based on mode
+            if (mode === 'zh-vi') {
+                $('#question-text').text(currentQuestion.CHUHAN);
+                $('#question-pinyin').text(currentQuestion.PINYIN);
+                correctAnswer = currentQuestion.VIETNAM;
+            } else {
+                $('#question-text').text(currentQuestion.VIETNAM);
+                $('#question-pinyin').text('');
+                correctAnswer = currentQuestion.CHUHAN;
+            }
+
+            // Generate wrong answers
+            let answers = [correctAnswer];
+            let wrongAnswers = shuffleArray(vocabulary.filter(v => {
+                if (mode === 'zh-vi') {
+                    return v.VIETNAM !== correctAnswer;
+                } else {
+                    return v.CHUHAN !== correctAnswer;
+                }
+            })).slice(0, 3);
+
+            wrongAnswers.forEach(v => {
+                answers.push(mode === 'zh-vi' ? v.VIETNAM : v.CHUHAN);
+            });
+
+            // Shuffle answers
+            answers = shuffleArray(answers);
+
+            // Display answers
+            $('.answer-btn').each(function(index) {
+                $(this).text(answers[index]);
+            });
+        }
+
+        // Handle answer click
+        $('.answer-btn').click(function() {
+            if (answered) return;
+            
+            answered = true;
+            const selectedAnswer = $(this).text();
+            const isCorrect = selectedAnswer === correctAnswer;
+
+            // Disable all buttons
+            $('.answer-btn').prop('disabled', true).removeClass('hover:bg-gray-200');
+
+            if (isCorrect) {
+                $(this).removeClass('bg-gray-100').addClass('bg-green-500 text-white');
+                correctCount++;
+                $('#correct-count').text(correctCount);
+                
+                // Track learned word
+                const wordKey = currentQuestion.CHUHAN;
+                if (!learnedWords[wordKey]) {
+                    learnedWords[wordKey] = { correct: 0, wrong: 0 };
+                }
+                learnedWords[wordKey].correct++;
+                
+                // Giảm số lần cần ôn nếu từ này đang trong hàng đợi
+                markWordReviewed(currentQuestion);
+                
+                // Update progress
+                const currentProgress = correctCount + wrongCount;
+                $('#progress').text(`${currentProgress}/${totalQuestions}`);
+                
+                // Save progress
+                saveProgress();
+                
+                // Auto next after 800ms for correct answer
+                setTimeout(function() {
+                    generateQuestion();
+                }, 800);
+                
+            } else {
+                $(this).removeClass('bg-gray-100').addClass('bg-red-500 text-white');
+                wrongCount++;
+                $('#wrong-count').text(wrongCount);
+                
+                // Track mistake
+                const wordKey = currentQuestion.CHUHAN;
+                if (!learnedWords[wordKey]) {
+                    learnedWords[wordKey] = { correct: 0, wrong: 0 };
+                }
+                learnedWords[wordKey].wrong++;
+                
+                // Thêm vào hàng đợi ôn tập
+                addToReviewQueue(currentQuestion);
+                
+                // Highlight correct answer and show full info
+                $('.answer-btn').each(function() {
+                    if ($(this).text() === correctAnswer) {
+                        $(this).removeClass('bg-gray-100').addClass('bg-green-500 text-white');
+                    }
+                });
+                
+                // Update progress
+                const currentProgress = correctCount + wrongCount;
+                $('#progress').text(`${currentProgress}/${totalQuestions}`);
+                
+                // Save progress
+                saveProgress();
+                
+                // Show detailed explanation for wrong answer
+                showExplanation();
+                
+                // Show next button for wrong answer
+                $('#next-btn').removeClass('hidden');
+            }
+        });
+
+        // Show explanation when wrong
+        function showExplanation() {
+            // Check review status
+            const reviewStatus = reviewQueue.find(w => w.CHUHAN === currentQuestion.CHUHAN);
+            const reviewsNeeded = reviewStatus ? reviewStatus.reviewsNeeded : 3;
+            
+            const explanationHtml = `
+                <div class="mt-6 p-6 bg-yellow-50 border-2 border-yellow-300 rounded-xl">
+                    <h3 class="text-xl font-bold text-yellow-800 mb-4">📚 Ghi nhớ từ này:</h3>
+                    <div class="space-y-2">
+                        <div class="flex items-center">
+                            <span class="text-gray-600 font-semibold w-24">Chữ Hán:</span>
+                            <span class="text-3xl font-bold text-indigo-900">${currentQuestion.CHUHAN}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-gray-600 font-semibold w-24">Pinyin:</span>
+                            <span class="text-xl text-gray-700">${currentQuestion.PINYIN}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-gray-600 font-semibold w-24">Nghĩa:</span>
+                            <span class="text-xl text-gray-700">${currentQuestion.VIETNAM}</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 p-3 bg-orange-100 rounded-lg">
+                        <p class="text-sm text-orange-800">
+                            🔄 <strong>Từ này sẽ xuất hiện lại ${reviewsNeeded} lần nữa</strong> để bạn ghi nhớ tốt hơn!
+                        </p>
+                    </div>
+                </div>
+            `;
+            $('#question-container').append(explanationHtml);
+        }
+
+        // Next question
+        $('#next-btn').click(function() {
+            generateQuestion();
+        });
+    </script>
+</body>
+</html>
